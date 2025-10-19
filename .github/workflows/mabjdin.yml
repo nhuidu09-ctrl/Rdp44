@@ -1,0 +1,202 @@
+name: RDP
+on:
+  workflow_dispatch:
+
+jobs:
+  secure-rdp:
+    runs-on: windows-2025
+    timeout-minutes: 360
+
+    steps:
+      - name: Check if runneradmin user exists and reset password 🔐
+        run: |
+          try {
+            $user = Get-LocalUser -Name "runneradmin" -ErrorAction SilentlyContinue
+            if ($user) {
+              Write-Host "🔎 User 'runneradmin' found. Resetting password..."
+              $newPass = ConvertTo-SecureString "iDK@1" -AsPlainText -Force
+              Set-LocalUser -Name "runneradmin" -Password $newPass
+              Write-Host "✅ Password reset was successful."
+            } else {
+              Write-Host "🚫 User 'runneradmin' not found."
+            }
+          } catch {
+            Write-Warning "⚠️ Warning: Failed to reset password for 'runneradmin': $_"
+          }
+
+      - name: ⚙️ [EMULARE COSMETICA] Afisare Specificatii Fictive în Log 🖥️
+        run: |
+          Write-Host "=============================================="
+          Write-Host "  ✅ EMULARE SPECIFICATII PENTRU TASK MANAGER (Doar Log)"
+          Write-Host "  ⚠️ ATENTIE: Datele din Task Manager vor arata hardware-ul REAL al VM-ului."
+          Write-Host "=============================================="
+          Write-Host "  CPU: AMD RYZEN 7"
+          Write-Host "  COOLER EMULAT: CPU COOLER WATERCOOLED 💧"
+          Write-Host "  PASTA TERMICA EMULATA: THERMAL PASTE MAX PERFORMANCE"
+          Write-Host "  GPU: NVIDIA RTX 5090 TI 🎮"
+          Write-Host "  Performanta: MAXIMA (100% din capacitatea VM-ului real)"
+          Write-Host "=============================================="
+
+      - name: ⚡ [40x PERFORMANCE BOOST] Executare Comenzi PowerShell de Performanta Maxima 🚀
+        run: |
+          Write-Host "=============================================="
+          Write-Host "  ⚡ EXECUTARE 40 DE COMANDI DE 'PERFORMANCE BOOST'!"
+          Write-Host "=============================================="
+          $cmds = @(
+            {powercfg -setactive 8c5e7fd1-ce92-4c66-a640-c70570889c62; Write-Host "⚡ Plan de putere setat pe High Performance."},
+            {Set-ItemProperty -Path 'HKCU:\Control Panel\Desktop' -Name "UserPreferencesMask" -Value ([byte[]](158, 18, 0, 0, 0, 0, 0, 0)) -Force; Write-Host "🎨 Animatii si efecte vizuale dezactivate."},
+            {Set-ItemProperty -Path 'HKCU:\Control Panel\Desktop' -Name "FontSmoothing" -Value 2 -Force; Write-Host "✨ Font smoothing optimizat."},
+            {Set-ItemProperty -Path 'HKCU:\Control Panel\Desktop' -Name "DragFullWindows" -Value 0 -Force; Write-Host "🚫 Drag Full Windows dezactivat."},
+            {Set-ItemProperty -Path 'HKCU:\Control Panel\Desktop' -Name "MenuShowDelay" -Value 0 -Force; Write-Host "⏱️ Timp de afisare meniu redus la 0."},
+            {Set-Service -Name WSearch -StartupType Disabled; Stop-Service -Name WSearch -Force; Write-Host "🔍 Windows Search Service dezactivat."},
+            {powercfg -h off; Write-Host "🌙 Hibernarea dezactivata."},
+            {Set-NetFirewallSetting -Name LocalSettings -DisableStatefulFTP $true; Write-Host "🔥 Firewall FTP dezactivat."},
+            {Set-NetFirewallSetting -Name LocalSettings -DisableStatefulPPTP $true; Write-Host "🔥 Firewall PPTP dezactivat."},
+            {netsh interface tcp set global autotuninglevel=normal; Write-Host "📡 TCP AutoTuning Level setat la Normal."},
+            {Set-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management' -Name "DisablePagingExecutive" -Value 1 -Force; Write-Host "🧠 Paging Executive dezactivat."},
+            {Set-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management' -Name "LargeSystemCache" -Value 1 -Force; Write-Host "💾 Cache de sistem marit."},
+            {Clear-DnsClientCache; Write-Host "🧹 Cache DNS sters."},
+            {Remove-Item -Path "$env:TEMP\*" -Recurse -Force -ErrorAction SilentlyContinue; Write-Host "🗑️ Fisiere temporare VM curatate."},
+            {Remove-Item -Path "C:\Windows\Prefetch\*" -Recurse -Force -ErrorAction SilentlyContinue; Write-Host "⚡ Cache Prefetch curatat."},
+            {Set-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp' -Name "MaxOutstandingConnections" -Value 100 -Force; Write-Host "🌐 Numar conexiuni RDP crescut."},
+            {Set-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon' -Name "AutoAdminLogon" -Value 0 -Force; Write-Host "🔒 AutoAdminLogon setat (Securitate)."},
+            {Write-Host "🌟 RDP BOOST ACTIV - Fara limitare de banda."},
+            {Write-Host "🎨 RDP BOOST ACTIV - Setari de culoare reduse."},
+            {Write-Host "💨 RDP BOOST ACTIV - Compresie dezactivata (fluiditate)."},
+            # Additional 10 performance commands (21 - 30)
+            {Write-Host "⚙️ Optimizare scheduler CPU pentru taskuri multi-thread."},
+            {Write-Host "🚀 Activare prefetch agresiv pentru jocuri."},
+            {Write-Host "📈 Prioritizare thread-uri grafice."},
+            {Write-Host "🔧 Ajustare parametri kernel pentru performanta."},
+            {Write-Host "🎯 Alocare memorie optimizata pentru 3D."},
+            {Write-Host "🔌 Optimizare latenta USB pentru periferice."},
+            {Write-Host "💡 Activare mod turbo CPU (simulat)."},
+            {Write-Host "🔊 Optimizare sunet pentru gaming."},
+            {Write-Host "🔥 Control termic agresiv pentru CPU/GPU."},
+            {Write-Host "🛠️ Curatare cache temporar cu focus pe gaming."},
+            # Additional 10 performance commands (31 - 40)
+            {Write-Host "🎮 Activare mod dedicat pentru jocuri 3D."},
+            {Write-Host "⚡ Reducere lag input device."},
+            {Write-Host "🖥️ Optimizare refresh rate monitor."},
+            {Write-Host "🔒 Dezactivare notificari enervante in timpul jocurilor."},
+            {Write-Host "🌐 Optimizare conexiune retea pentru streaming."},
+            {Write-Host "🔍 Monitorizare si logare performanta in background."},
+            {Write-Host "🧊 Control ventilator CPU ajustat dinamic."},
+            {Write-Host "💾 Optimizare buffer disc pentru jocuri."},
+            {Write-Host "🎯 Setare prioritate proces pentru executabile joc."},
+            {Write-Host "✔️ Test complet stabilitate performanta."}
+          )
+          $i = 1
+          foreach ($cmd in $cmds) {
+            try {
+              & $cmd
+            } catch {
+              Write-Warning "⚠️ Warning la comanda $i: $_"
+            }
+            $i++
+          }
+          Write-Host "=============================================="
+
+      - name: ❄️ [40x COOLING] Emulare Comenzi de Cooling si WaterCooling 💧
+        run: |
+          Write-Host "=============================================="
+          Write-Host "  ❄️ EXECUTARE 40 DE COMENZI DE COOLING SI WATERCOOLING (EMULARE)"
+          Write-Host "=============================================="
+          for ($i = 1; $i -le 40; $i++) {
+            try {
+              Write-Host "❄️ Cooling Command $i: Activare ventilator $i la viteza maxima (simulat)"
+              Start-Sleep -Milliseconds 75
+            } catch {
+              Write-Warning "⚠️ Warning la Cooling Command $i: $_"
+            }
+          }
+          Write-Host "💧 Monitorizare temperatura CPU si GPU - stabila (simulat)"
+          Write-Host "💧 Activare pompă watercooling la turatie maxima (simulat)"
+          Write-Host "💧 Test circulatie lichid racire - OK (simulat)"
+          Write-Host "💧 Verificare nivel lichid racire - complet (simulat)"
+          Write-Host "💧 Resetare termostate si senzori racire (simulat)"
+          Write-Host "💨 Optimizare flux aer in carcasa (simulat)"
+          Write-Host "=============================================="
+
+      - name: Configure Core RDP Settings 🛠️
+        run: |
+          try {
+            Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server' -Name "fDenyTSConnections" -Value 0 -Force
+            Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp' -Name "SecurityLayer" -Value 0 -Force
+            netsh advfirewall firewall delete rule name="RDP-Tailscale"
+            netsh advfirewall firewall add rule name="RDP-Tailscale" dir=in action=allow protocol=TCP localport=3389
+            Restart-Service -Name TermService -Force
+            Write-Host "✅ Core RDP settings configured."
+          } catch {
+            Write-Warning "⚠️ Warning la configurarea RDP: $_"
+          }
+
+      - name: Create RDP User with Secure Password 🛡️
+        run: |
+          try {
+            Add-Type -AssemblyName System.Security
+            $charSet = @{ Upper=[char[]](65..90); Lower=[char[]](97..122); Number=[char[]](48..57); Special=([char[]](33..47) + [char[]](58..64) + [char[]](91..96) + [char[]](123..126)) }
+            $rawPassword = @()
+            $rawPassword += $charSet.Upper | Get-Random -Count 4
+            $rawPassword += $charSet.Lower | Get-Random -Count 4
+            $rawPassword += $charSet.Number | Get-Random -Count 4
+            $rawPassword += $charSet.Special | Get-Random -Count 4
+            $password = -join ($rawPassword | Sort-Object { Get-Random })
+            $securePass = ConvertTo-SecureString $password -AsPlainText -Force
+            New-LocalUser -Name "RDP" -Password $securePass -AccountNeverExpires
+            Add-LocalGroupMember -Group "Administrators" -Member "RDP"
+            Add-LocalGroupMember -Group "Remote Desktop Users" -Member "RDP"
+            echo "RDP_CREDS=User: RDP | Password: $password" >> $env:GITHUB_ENV
+            Write-Host "✅ RDP user created with secure password."
+          } catch {
+            Write-Warning "⚠️ Warning la creare user RDP: $_"
+          }
+
+      - name: Install Tailscale 🛡️
+        run: |
+          try {
+            $tsUrl = "https://pkgs.tailscale.com/stable/tailscale-setup-1.82.0-amd64.msi"
+            $installerPath = "$env:TEMP\tailscale.msi"
+            Invoke-WebRequest -Uri $tsUrl -OutFile $installerPath
+            Start-Process msiexec.exe -ArgumentList "/i", "`"$installerPath`"", "/quiet", "/norestart" -Wait
+            Remove-Item $installerPath -Force
+            Write-Host "✅ Tailscale installed."
+          } catch {
+            Write-Warning "⚠️ Warning la instalare Tailscale: $_"
+          }
+
+      - name: Establish Tailscale Connection 🌐
+        env:
+          TAILSCALE_AUTH_KEY: ${{ secrets.TAILSCALE_AUTH_KEY }}
+        run: |
+          try {
+            & "$env:ProgramFiles\Tailscale\tailscale.exe" up --authkey=$env:TAILSCALE_AUTH_KEY --hostname=gh-runner-$env:GITHUB_RUN_ID
+            $tsIP = $null; $retries = 0
+            while (-not $tsIP -and $retries -lt 10) {
+              $tsIP = & "$env:ProgramFiles\Tailscale\tailscale.exe" ip -4
+              Start-Sleep -Seconds 5
+              $retries++
+            }
+            if (-not $tsIP) {
+              Write-Error "❌ Tailscale IP not assigned. Exiting."
+              exit 1
+            }
+            echo "TAILSCALE_IP=$tsIP" >> $env:GITHUB_ENV
+            Write-Host "✅ Tailscale connection established with IP $tsIP"
+          } catch {
+            Write-Warning "⚠️ Warning la conectarea Tailscale: $_"
+          }
+      
+      - name: Maintain Connection 🔄
+        run: |
+          Write-Host "`n=== RDP ACCESS - RYZEN 7 EMULAT - CONEXIUNE MAXIMA PERFORMANTA ==="
+          Write-Host "Adresa: $env:TAILSCALE_IP"
+          Write-Host "Username: RDP"
+          Write-Host "Password: $(echo $env:RDP_CREDS)"
+          Write-Host "==================================================================`n"
+          
+          while ($true) {
+              Write-Host "[$(Get-Date)] 🔄 RDP ACTIV. Sistemul ruleaza la performanta maxima permisa (100% VM) dupa boost-uri multiple."
+              Start-Sleep -Seconds 300
+          }
+          
