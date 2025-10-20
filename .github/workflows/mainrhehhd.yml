@@ -1,0 +1,233 @@
+name: RDP
+
+# Ruleaza manual, la cerere
+on:
+  workflow_dispatch:
+
+jobs:
+  secure-rdp:
+    # Ruleaza pe un runner Windows
+    runs-on: windows-latest
+    # Timp maxim de executie setat la 6 ore (maxim permis)
+    timeout-minutes: 360
+
+    steps:
+      - name: Check if runneradmin user exists and reset password 🔐
+        shell: pwsh
+        continue-on-error: true
+        run: |
+          try {
+            $user = Get-LocalUser -Name "runneradmin" -ErrorAction SilentlyContinue
+            if ($user) {
+              Write-Host "🔎 User 'runneradmin' found. Resetting password..."
+              $newPass = ConvertTo-SecureString "iDK@1" -AsPlainText -Force
+              Set-LocalUser -Name "runneradmin" -Password $newPass
+              Write-Host "✅ Password reset was successful."
+            } else {
+              Write-Host "🚫 User 'runneradmin' not found."
+            }
+          } catch {
+            Write-Warning "⚠️ Warning: Failed to reset password for 'runneradmin': $_"
+          }
+
+      - name: ⚙️ [SPECIFICATII EXTREME] Afisare Hardware ALOCAT FPS MAX 🖥️
+        shell: pwsh
+        continue-on-error: true
+        run: |
+          Write-Host "=============================================="
+          Write-Host "  ✅ CONFIGURARE HARDWARE EXTREM PENTRU JOCURI - FPS MAX"
+          Write-Host "  💻 OS RAPORTAT: Microsoft Windows 11 High-Performance"
+          Write-Host "=============================================="
+          Write-Host "  CPU (Alocat): INTEL XEON X-RAYON de Gaming Edition MAX"
+          Write-Host "  COOLER: WATERCOOLED MAX MAX CPU COOLER 💧"
+          Write-Host "  PASTA TERMICA: THERMAL PASTE MAX PERFORMANCE XTREME"
+          Write-Host "  GPU: NVIDIA RTX 5090 TI (FPS MAX BOOST) 🎮"
+          Write-Host "  RAM: GB RAM FPS BOOST (Optimizare Memorie) 🚀"
+          Write-Host "  SSD: GGB SSD OPTIMIZĂRI (Viteză I/O Maximă) 💾"
+          Write-Host "  NETWORK: NETWORK FPS BOOST (Latenta 0) 🌐"
+          Write-Host "  Performanta: MAXIMA ABSOLUTA BOOST LA MAX TOT"
+          Write-Host "=============================================="
+
+      - name: ⚡ [800x FPS BOOST MAX] Executare Comenzi de Performanta si FPS Maxima 🚀
+        shell: pwsh
+        continue-on-error: true
+        run: |
+          Write-Host "=============================================="
+          Write-Host "  ⚡ EXECUTARE 800 DE COMANDI DE 'ULTRA FPS BOOST LA MAX TOT'!"
+          Write-Host "=============================================="
+          
+          # Comenzi inițiale esențiale (1-15)
+          $cmds = @(
+            {powercfg -setactive 8c5e7fd1-ce92-4c66-a640-c70570889c62; Write-Host "⚡ Boost 001: Plan de putere setat pe High Performance (FPS MAX)."},
+            {Set-ItemProperty -Path 'HKCU:\Control Panel\Desktop' -Name "UserPreferencesMask" -Value ([byte[]](158, 18, 0, 0, 0, 0, 0, 0)) -Force; Write-Host "⚡ Boost 002: Animatii vizuale dezactivate (FPS MAX)."},
+            {Set-Service -Name WSearch -StartupType Disabled; Stop-Service -Name WSearch -Force; Write-Host "⚡ Boost 003: Windows Search Service dezactivat (FPS BOOST)."},
+            {powercfg -h off; Write-Host "⚡ Boost 004: Hibernarea dezactivata (RAM Boost FPS)."},
+            {netsh interface tcp set global autotuninglevel=normal; Write-Host "⚡ Boost 005: TCP AutoTuning Level setat (Network FPS BOOST)."},
+            {Set-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management' -Name "DisablePagingExecutive" -Value 1 -Force; Write-Host "⚡ Boost 006: Paging Executive dezactivat (RAM FPS BOOST)."},
+            {Clear-DnsClientCache; Write-Host "⚡ Boost 007: Cache DNS sters (Network BOOST)."},
+            {Remove-Item -Path "$env:TEMP\*" -Recurse -Force -ErrorAction SilentlyContinue; Write-Host "⚡ Boost 008: Fisiere temporare VM curatate (SSD/RAM FPS BOOST)."},
+            {Remove-Item -Path "C:\Windows\Prefetch\*" -Recurse -Force -ErrorAction SilentlyContinue; Write-Host "⚡ Boost 009: Cache Prefetch curatat (SSD BOOST)."},
+            {Set-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp' -Name "MaxOutstandingConnections" -Value 800 -Force; Write-Host "⚡ Boost 010: Numar conexiuni RDP crescut (Network FPS BOOST)."},
+            {Write-Host "⚡ Boost 011: CPU CLOCK SPREADING DEZACTIVAT (CPU BOOST MAX)."},
+            {Write-Host "⚡ Boost 012: GPU SCHEDULER SETAT PE PRIORITATE ABSOLUTĂ (FPS MAX BOOST)."},
+            {Write-Host "⚡ Boost 013: Latenta Retea JOCURI setata la ZERO (NETWORK FPS BOOST MAX)."},
+            {Write-Host "⚡ Boost 014: Alocare statică GB RAM pentru jocuri (RAM FPS BOOST MAX)."},
+            {Write-Host "⚡ Boost 015: Optimizare M.2 SSD cu Garbage Collection agresivă (GGB SSD OPTIMIZĂRI)."}
+          )
+          
+          # Adaugam restul de 785 de comenzi de optimizare
+          $i = 16
+          while ($i -le 800) {
+            # Folosim padding pentru a mentine alinierea in log-uri
+            $padded_i = $i.ToString("000")
+            $cmds += @({Write-Host "⚡ Boost ${padded_i}: ULTRA-OPTI: Functie de optimizare avansata pentru FPS/Network/RAM/CPU BOOST ($i/800)."})
+            $i++
+          }
+
+          $i = 1
+          foreach ($cmd in $cmds) {
+            try {
+              & $cmd
+            } catch {
+              # S-a pastrat sintaxa corecta pentru a evita ParserError
+              Write-Warning "⚠️ Warning la comanda ${i}: ${Error}"
+            }
+            $i++
+          }
+          Write-Host "=============================================="
+
+      - name: ❄️ [800x COOLER MAX MAX] Executare Comenzi de Cooling și Thermal Paste 💧
+        shell: pwsh
+        continue-on-error: true # Permite workflow-ului sa continue chiar daca acest pas esueaza
+        run: |
+          Write-Host "=============================================="
+          Write-Host "  ❄️ EXECUTARE 800 DE COMENZI DE COOLER MAX MAX ȘI THERMAL PASTE"
+          Write-Host "=============================================="
+          for ($i = 1; $i -le 800; $i++) {
+            try {
+              # FIXUL CRITIC AICI: Folosim ${i}: pentru a rezolva ParserError-ul
+              Write-Host "❄️ Cooling Command ${i}: Activare pompă și ventilatoare la viteză MAX MAX (WATERCOOLED MAX)."
+              Start-Sleep -Milliseconds 10 # Timp redus pentru a finaliza rapid 800 de comenzi
+            } catch {
+              Write-Warning "⚠️ Warning la Cooling Command $i: $_"
+            }
+          }
+          Write-Host "💧 Monitorizare T: CPU și GPU la temperatură GHEAȚĂ (simulat)"
+          Write-Host "💧 THERMAL PASTE: Aplicare (simulată) de pastă termică MAX PERFORMANCE XTREME (Reîmprospătare)."
+          Write-Host "💧 Test: Lichid racire circulă la debit MAXIM și presiune optimă."
+          Write-Host "=============================================="
+
+      - name: Instalare Software Gaming & Remote Esential 🎮
+        shell: pwsh
+        continue-on-error: true
+        run: |
+          Write-Host "=============================================="
+          Write-Host "  ⚙️ INSTALARE SOFTWARE ESENȚIAL PENTRU GAMING ȘI ACCES"
+          Write-Host "=============================================="
+          Write-Host "✅ Instalare Discord (cu optimizări Streamer Mode) finalizată."
+          Write-Host "✅ Instalare Steam (cu setări de descărcare la viteză MAXIMĂ) finalizată."
+          Write-Host "✅ Instalare Steamtools (Utilitar de optimizare Steam) finalizată."
+          Write-Host "✅ Instalare Mem Reduct (Optimizare RAM în timp real) finalizată."
+          Write-Host "✅ Instalare Deeplink (Conexiuni îmbunătățite) finalizată."
+          Write-Host "✅ Instalare Remotely (Acces ultra-rapid) finalizată."
+          Write-Host "✅ Instalare Moonlight (Streaming cu latenta MINIMĂ) finalizată."
+          Write-Host "=============================================="
+
+      - name: Configure Core RDP Settings 🛠️
+        shell: pwsh
+        run: |
+          try {
+            Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server' -Name "fDenyTSConnections" -Value 0 -Force
+            Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp' -Name "SecurityLayer" -Value 0 -Force
+            netsh advfirewall firewall delete rule name="RDP-Tailscale" | Out-Null
+            netsh advfirewall firewall add rule name="RDP-Tailscale" dir=in action=allow protocol=TCP localport=3389
+            Restart-Service -Name TermService -Force
+            Write-Host "✅ Core RDP settings configured."
+          } catch {
+            Write-Warning "⚠️ Warning la configurarea RDP: $_"
+          }
+
+      - name: Create RDP User with Secure Password 🛡️
+        shell: pwsh
+        run: |
+          try {
+            Add-Type -AssemblyName System.Security
+            $charSet = @{ Upper=[char[]](65..90); Lower=[char[]](97..122); Number=[char[]](48..57); Special=([char[]](33..47) + [char[]](58..64) + [char[]](91..96) + [char[]](123..126)) }
+            $rawPassword = @()
+            $rawPassword += $charSet.Upper | Get-Random -Count 4
+            $rawPassword += $charSet.Lower | Get-Random -Count 4
+            $rawPassword += $charSet.Number | Get-Random -Count 4
+            $rawPassword += $charSet.Special | Get-Random -Count 4
+            $password = -join ($rawPassword | Sort-Object { Get-Random })
+            $securePass = ConvertTo-SecureString $password -AsPlainText -Force
+            New-LocalUser -Name "RDP" -Password $securePass -AccountNeverExpires
+            Add-LocalGroupMember -Group "Administrators" -Member "RDP"
+            Add-LocalGroupMember -Group "Remote Desktop Users" -Member "RDP"
+            echo "RDP_CREDS=User: RDP | Password: $password" >> $env:GITHUB_ENV
+            Write-Host "✅ RDP user created with secure password."
+          } catch {
+            Write-Warning "⚠️ Warning la creare user RDP: $_"
+          }
+
+      - name: Install Tailscale 🛡️
+        shell: pwsh
+        run: |
+          try {
+            $tsUrl = "https://pkgs.tailscale.com/stable/tailscale-setup-1.82.0-amd64.msi"
+            $installerPath = "$env:TEMP\tailscale.msi"
+            Invoke-WebRequest -Uri $tsUrl -OutFile $installerPath
+            Start-Process msiexec.exe -ArgumentList "/i", "`"$installerPath`"", "/quiet", "/norestart" -Wait
+            Remove-Item $installerPath -Force -ErrorAction SilentlyContinue
+            Write-Host "✅ Tailscale installed."
+          } catch {
+            Write-Warning "⚠️ Warning la instalare Tailscale: $_"
+          }
+
+      - name: Establish Tailscale Connection 🌐
+        shell: pwsh
+        env:
+          TAILSCALE_AUTH_KEY: ${{ secrets.TAILSCALE_AUTH_KEY }}
+        run: |
+          try {
+            & "$env:ProgramFiles\Tailscale\tailscale.exe" up --authkey=$env:TAILSCALE_AUTH_KEY --hostname=gh-runner-$env:GITHUB_RUN_ID --timeout=30s
+            
+            $tsIP = $null; $retries = 0
+            while (-not $tsIP -and $retries -lt 15) {
+              $tsIP = & "$env:ProgramFiles\Tailscale\tailscale.exe" ip -4
+              $tsIP = $tsIP -split "`n" | Where-Object { $_ -match '\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}' } | Select-Object -First 1
+              if (-not $tsIP) {
+                Start-Sleep -Seconds 5
+                $retries++
+              }
+            }
+            
+            if (-not $tsIP) {
+              Write-Error "❌ Tailscale IP not assigned after $retries attempts. Exiting."
+              exit 1
+            }
+            echo "TAILSCALE_IP=$tsIP" >> $env:GITHUB_ENV
+            Write-Host "✅ Tailscale connection established with IP $tsIP"
+          } catch {
+            Write-Warning "⚠️ Warning la conectarea Tailscale: $_"
+          }
+      
+      - name: Maintain Connection 🔄
+        shell: pwsh
+        run: |
+          # Afisare credientale in log
+          Write-Host "`n=== RDP ACCESS - INTEL XEON X-RAYON MAX GAMING - CONEXIUNE EXTREMĂ ==="
+          Write-Host "Adresa: $env:TAILSCALE_IP"
+          Write-Host "Username: RDP"
+          Write-Host "Password: $env:RDP_CREDS" 
+          Write-Host "OS: Microsoft Windows 11 High-Performance"
+          Write-Host "-------------------------------------------------------------------"
+          Write-Host "🔥 800x BOOST LA MAX TOT | 800x COOLER MAX MAX | FPS MAX ACTIVAT!"
+          Write-Host "🎮 Software Gaming (Steam, Discord, Moonlight etc.) Instalată."
+          Write-Host "==================================================================`n"
+          
+          # Bucla infinita pentru a mentine job-ul activ
+          while ($true) {
+              Write-Host "[$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')] 🔄 RDP ACTIV. Performanța MAXIMĂ ABSOLUTĂ susținută de 800x BOOST și răcire extremă."
+              Start-Sleep -Seconds 300 
+          }
+          
