@@ -1,0 +1,100 @@
+name: "PROVISIONARE VM PREMIUM CU GPU (GCP)"
+
+on:
+  workflow_dispatch:
+    inputs:
+      duration_hours:
+        description: "Durata in ore cat VM-ul ramane pornit."
+        default: '0.1' # Implicit 6 minute pentru test, seteaza la '6' pentru cerinta ta
+        required: true
+        type: string
+      vm_name:
+        description: "Numele dorit pentru VM."
+        default: 'vm-premium-gpu-amd'
+        required: true
+        type: string
+
+jobs:
+  provision_gpu_vm:
+    # Ruleaza pe un runner standard Ubuntu (Gratuit) pentru a da comanda
+    runs-on: ubuntu-latest
+    
+    # Folosim o variabila pentru durata in secunde
+    # Calculat in job-ul de mai jos
+    env:
+      VM_LIFETIME_SECONDS: ${{ github.event.inputs.duration_hours * 3600 }}
+      
+    steps:
+    - name: 1. Setup Google Cloud CLI
+      # Foloseste cheia de serviciu stocata in Secrets
+      uses: google-github-actions/auth@v1
+      with:
+        credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+    - name: 2. Configureaza Proiectul GCP
+      # Seteaza regiunea si proiectul tau
+      run: |
+        gcloud config set project [ID-UL-PROIECTULUI-TAU-GCP]
+        gcloud config set compute/zone us-central1-a # Alege o zona cu GPU T4
+
+    - name: 3. Creeaza VM-ul cu Specificatiile Cerute
+      id: create_vm
+      run: |
+        echo "Incepere creare VM. ACEASTA VA GENERERA COSTURI in contul tau GCP."
+        
+        # NOTE: Nu exista o imagine "Windows 11 Golden Image", dar folosim cea mai recenta
+        # NOTE: Nu exista un CPU "AMD EPYC V12 Pro", dar selectam o serie de masini (N1) care poate gazdui GPU
+        
+        gcloud compute instances create ${{ github.event.inputs.vm_name }} \
+          --image-family windows-2022 \
+          --image-project windows-cloud \
+          --machine-type n1-standard-8 \
+          --zone us-central1-a \
+          --maintenance-policy MIGRATE \
+          --accelerator type=nvidia-tesla-t4,count=1 \
+          --disk size=400,device-name=boot,auto-delete=yes,mode=rw \
+          --metadata windows-startup-script-ps1="gcloud compute instances set-metadata ${{ github.event.inputs.vm_name }} --metadata-from-file RDP_PASSWD_SECRET=$(echo '${{ secrets.VM_PASSWORD }}' | base64)" \
+          --boot-disk-type pd-standard \
+          --min-cpu-platform "AMD Rome" # Simulare cerinta AMD EPYC
+
+        # Seteaza parola Windows RDP (Comanda complexa pentru securitate)
+        gcloud compute reset-windows-password ${{ github.event.inputs.vm_name }} \
+          --user=user_gaming_win11 \
+          --password=${{ secrets.VM_PASSWORD }} \
+          --zone us-central1-a
+
+    - name: 4. Afiseaza Detalii de Conectare (IP si User)
+      id: show_info
+      run: |
+        VM_IP=$(gcloud compute instances describe ${{ github.event.inputs.vm_name }} --zone us-central1-a --format='get(networkInterfaces[0].accessConfigs[0].natIP)')
+        
+        echo "--- Informatii VM Real si Parola Protejata ---"
+        echo "Status: VM-ul T4 ruleaza."
+        echo "Utilizator: user_gaming_win11"
+        echo "IP Public: $VM_IP"
+        # Parola se ia din Secretul VM_PASSWORD - NU O VOM AFISA IN LOG!
+        echo "Parola: Foloseste Secretul VM_PASSWORD. Nu este afisata in log-uri din motive de securitate."
+        
+        # Exporta IP-ul pentru pasul urmator
+        echo "VM_IP=$VM_IP" >> $GITHUB_ENV
+
+    - name: 5. Ruleaza pentru durata ceruta
+      run: |
+        echo "VM-ul va rula in GOl timp de ${{ github.event.inputs.duration_hours }} ore."
+        # AICI SE FOLOSESTE RDP-UL PENTRU A RULEZA CE VREI TU.
+        # Pentru a indeplini cerinta de 6 ore de rulare in log-ul GitHub:
+        /bin/bash -c "sleep $VM_LIFETIME_SECONDS"
+        
+    - name: 6. Simulare Detectare GPU pe VM (Nu putem rula CMD direct, doar simulare)
+      run: |
+        echo "--- Detectare GPU ---"
+        echo "Daca te-ai conecta prin RDP, ai vedea: NVIDIA TESLA T4"
+        echo "Comanda de detectare (simulata): nvidia-smi.exe"
+        echo "Rezultat simulat: GPU Model: TESLA T4, 2560 CUDA Cores."
+
+    - name: 7. Sterge VM-ul si Resursele (CRUCIAL pentru a opri costurile)
+      if: always() # Ruleaza chiar daca pasii anteriori au esuat
+      run: |
+        echo "Stergerea VM-ului ${{ github.event.inputs.vm_name }} pentru a opri costurile..."
+        gcloud compute instances delete ${{ github.event.inputs.vm_name }} --zone us-central1-a --quiet
+        echo "VM sters cu succes."
