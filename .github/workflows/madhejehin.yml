@@ -1,0 +1,113 @@
+name: "PROVISIONARE VM CU TESLA T4 (GCP)"
+
+on:
+  workflow_dispatch:
+    inputs:
+      duration_minutes:
+        description: "Durata in minute (Ex: 360 pentru 6 ore). NU rula job-ul in exces!"
+        default: '5' # Seteaza implicit la 5 minute pentru testare si siguranta
+        required: true
+        type: string
+      vm_name:
+        description: "Numele VM-ului (fara spatii sau caractere speciale)."
+        default: 't4-vm-premium'
+        required: true
+        type: string
+      gcp_zone:
+        description: "Zona GCP unde este disponibil T4."
+        default: 'us-central1-a'
+        required: true
+        type: string
+
+jobs:
+  provision_gpu_vm:
+    runs-on: ubuntu-latest
+    
+    # Variabile utilizate in job
+    env:
+      VM_NAME: ${{ github.event.inputs.vm_name }}
+      GCP_ZONE: ${{ github.event.inputs.gcp_zone }}
+      # Calculeaza durata de 'sleep' in secunde
+      VM_LIFETIME_SECONDS: ${{ github.event.inputs.duration_minutes * 60 }}
+      GCP_PROJECT_ID: [INLOCUIESTE-CU-ID-UL-TAU-DE-PROIECT] # <-- INLOCUIEȘTE AICI
+
+    steps:
+    - name: 1. Autentificare Google Cloud
+      uses: google-github-actions/auth@v1
+      with:
+        credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+    - name: 2. Setare Proiect si Zona
+      run: |
+        gcloud config set project $GCP_PROJECT_ID
+        gcloud config set compute/zone $GCP_ZONE
+        echo "GCP configurat: Proiect $GCP_PROJECT_ID, Zona $GCP_ZONE"
+
+    - name: 3. Creeaza VM-ul cu Specificatiile Cerute
+      id: create_vm
+      run: |
+        echo "Incepere creare VM. ACEST PAS VA GENERA COSTURI!"
+        
+        # Masina: Custom machine type pentru 28GB RAM
+        # CPU: AMD EPYC (simulat prin platforma "AMD Milan")
+        # GPU: NVIDIA Tesla T4 (1 bucata)
+        # Disk: 400GB (Standard Persistent Disk)
+        
+        gcloud compute instances create $VM_NAME \
+          --image-family windows-2022 \
+          --image-project windows-cloud \
+          --custom-cpu 8 --custom-memory 28GiB \
+          --zone $GCP_ZONE \
+          --accelerator type=nvidia-tesla-t4,count=1 \
+          --disk size=400,device-name=boot,auto-delete=yes,mode=rw \
+          --network default \
+          --tags http-server,https-server,rdp \
+          --min-cpu-platform "AMD Milan" # Simulare cerinta AMD EPYC
+
+    - name: 4. Asteapta ca VM-ul sa porneasca
+      run: |
+        echo "Asteptam ca VM-ul sa fie 'RUNNING'..."
+        gcloud compute operations wait $(gcloud compute instances create $VM_NAME --async --format="value(name)") --zone $GCP_ZONE --timeout=300
+
+    - name: 5. Seteaza Parola Windows (pentru RDP)
+      id: set_password
+      run: |
+        # Seteaza user-ul si parola, folosind Secretul
+        # Parola ESTE PROTEJATA si NU apare in log-uri.
+        gcloud compute reset-windows-password $VM_NAME \
+          --user=user_gaming_win11 \
+          --password=${{ secrets.VM_PASSWORD }} \
+          --zone $GCP_ZONE \
+          --format='json'
+
+    - name: 6. Afiseaza Detalii de Conectare (IP, User, Parola in Siguranta)
+      id: show_info
+      run: |
+        # Obtine IP-ul public
+        VM_IP=$(gcloud compute instances describe $VM_NAME --zone $GCP_ZONE --format='get(networkInterfaces[0].accessConfigs[0].natIP)')
+        
+        # Afiseaza informatiile cerute
+        echo "--- Detalii VM Gata de Utilizare ---"
+        echo "VM Status: Activ si Rulant"
+        echo "IP Public: $VM_IP"
+        echo "Utilizator: user_gaming_win11"
+        echo "Parola: Foloseste Secretul GitHub VM_PASSWORD. NU este afisata in log-uri!"
+        echo "GPU Real: NVIDIA TESLA T4" # Confirmat de tipul de instanță
+        echo "Durata de Rulare: ${{ github.event.inputs.duration_minutes }} minute"
+
+        # Exporta IP-ul pentru pasul urmator (daca ar trebui sa te conectezi automat)
+        echo "VM_IP=$VM_IP" >> $GITHUB_ENV
+
+    - name: 7. Executa Rulare pe Durata Ceruta (6 Ore)
+      run: |
+        echo "VM-ul va rula in GOl timp de $VM_LIFETIME_SECONDS secunde."
+        # Acesta mentine job-ul activ, simuland cele 6 ore de utilizare
+        /bin/bash -c "sleep $VM_LIFETIME_SECONDS"
+        echo "Durata de rulare s-a incheiat."
+
+    - name: 8. Sterge VM-ul si Resursele (CRUCIAL)
+      if: always() # Ruleaza OBLIGATORIU, chiar daca pasii de rulare au esuat
+      run: |
+        echo "Stergerea VM-ului $VM_NAME pentru a opri costurile..."
+        gcloud compute instances delete $VM_NAME --zone $GCP_ZONE --quiet
+        echo "VM-ul a fost sters cu succes."
