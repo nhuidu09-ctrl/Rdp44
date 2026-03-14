@@ -1,0 +1,52 @@
+name: QEMU VM Runner
+
+on:
+  workflow_dispatch:
+
+jobs:
+  run-vm:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Install QEMU + noVNC
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y qemu-system-x86 qemu-utils novnc websockify x11vnc xvfb fluxbox
+
+    - name: Prepare storage
+      run: |
+        mkdir -p storage
+        if [ ! -f storage/disk.img ]; then
+          qemu-img create -f qcow2 storage/disk.img 40G
+        fi
+
+    - name: Start Xvfb + fluxbox
+      run: |
+        Xvfb :0 -screen 0 1280x720x16 &
+        sleep 2
+        fluxbox &
+
+    - name: Start VNC + noVNC
+      run: |
+        x11vnc -display :0 -nopw -forever -shared -rfbport 5900 &
+        websockify --web=/usr/share/novnc/ 6080 localhost:5900 &
+
+    - name: Start QEMU VM
+      run: |
+        qemu-system-x86_64 \
+          -m 1024G \
+          -smp 2 \
+          -drive file=storage/disk.img,if=virtio \
+          -cdrom storage/os.iso \
+          -boot d \
+          -vga virtio \
+          -display sdl \
+          -no-reboot
+
+    - name: Keep alive
+      run: sleep 21600
+      
